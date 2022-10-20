@@ -22,6 +22,5 @@ io.on('connection',(socket)=>{
     if(userName){
         userSocketLookup.set(userName,socket.id)
     }
-    console.log(userSocketLookup);
-
+    io.emit('onlineUsersList',Array.from(userSocketLookup.keys()).filter(name=>name!==userName));
 })
