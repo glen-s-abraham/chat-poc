@@ -1,13 +1,12 @@
-var userName = localStorage.getItem('userName')?localStorage.getItem('userName'):prompt('Enter Username');
+var userName = sessionStorage.getItem('userName')&&sessionStorage.getItem('userName')!==null?sessionStorage.getItem('userName'):prompt('Enter Username');
 if(!userName) location.reload();
-localStorage.setItem('userName',userName)
+sessionStorage.setItem('userName',userName)
 var params = {query: `userName=${userName}`}
 var socket = io('http://localhost:8080',params);
 
 socket.on('onlineUsersList',users =>{
     let membersOnline = document.querySelector('#members-online');
     membersOnline.innerHTML = users.reduce((html,curUser)=>html+=renderOnlineUser({name:curUser}),'');
-    
 })
 
 function renderOnlineUser(user){
