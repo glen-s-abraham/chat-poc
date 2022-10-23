@@ -22,10 +22,27 @@ io.on('connection',(socket)=>{
     if(userName){
         userSocketLookup.set(userName,socket.id)
     }
-    socket.emit('onlineUsersList',Array.from(userSocketLookup.keys()).filter(name=>name!==userName));
+    generateAndSendUsersList(socket);
+    broadCastUsersList(getActiveSockets());
+    
 })
 
-cron.schedule("*/5 * * * * *", ()=>{
+const getActiveSockets=()=>{
+    return Array.from(io.sockets.sockets.values());
+}
+
+const generateAndSendUsersList=(socket)=>{
+    let userName = socket.handshake.query.userName;
+    io.to(socket.id).emit('onlineUsersList',Array.from(userSocketLookup.keys()).filter(name=>name!==userName));
+}
+
+const broadCastUsersList=(sockets)=>{
+    sockets.forEach(socket=>{
+        generateAndSendUsersList(socket)
+    });
+}
+
+cron.schedule("*/2 * * * * *", ()=>{
     let users = Array.from(userSocketLookup.keys());
     
         if(users.length>0){    
@@ -33,7 +50,9 @@ cron.schedule("*/5 * * * * *", ()=>{
                 let userSocket = io.sockets.sockets.get(userSocketLookup.get(user));
                 if(!userSocket){
                     userSocketLookup.delete(user);
+                    broadCastUsersList(getActiveSockets());
                     console.log(`removed inactive user: ${user}`)
+                    
                 }
             })
         }
